@@ -3,3 +3,9 @@ This is my package tracking project for CS361.
 
 ## Description
 This software will allow the user to save tracking numbers and easily check the status of their packages whenver they want.
+
+import zmq
+
+socket.send_json(data)
+result = socket.recv_json()
+print(result)
