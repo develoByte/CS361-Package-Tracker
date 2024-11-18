@@ -36,7 +36,7 @@ while True:
 
     stats = process(message)
 
-    print("\n" + stats)
+    print(stats)
     print("\nReturning Stats")
     socket.send_json(stats)
 
