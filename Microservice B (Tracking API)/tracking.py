@@ -59,13 +59,18 @@ socket.bind("tcp://*:5555")
 print("Server started")
 
 while True:
-    message = socket.recv_string()
-    print(f"\nRecieved: {message}")
-    print(datetime.datetime.now())
-    result = get_tracking_info(message)
-    
-    print(json.dumps(result, indent=4))
+    try:
+        message = socket.recv_string()
+        print(f"\nRecieved: {message}")
+        print(datetime.datetime.now())
+        result = get_tracking_info(message)
+        
+        print(json.dumps(result, indent=4))
 
-    socket.send_json(result)
+        socket.send_json(result)
+
+    except Exception as e:
+        print("Error")
+        socket.send_json([e])
 
 
