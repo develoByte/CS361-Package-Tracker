@@ -2,6 +2,7 @@
 import zmq
 import colorama
 colorama.init(autoreset=True)
+details = None
 
 # Functions
 
@@ -23,6 +24,7 @@ def convert_datetime(datetime_str):
     
 # Display Tracking Information
 def display_tracking_info(courier, tracking_number, status, delivery_date):
+   
     print("\n‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
     print(colorama.Fore.CYAN + courier + " Tracking Number:")
     print(colorama.Fore.YELLOW + tracking_number)
@@ -90,12 +92,21 @@ def archive_tracking_number(tracking_number):
     response = socket.recv_json()
 
 # Share Tracking Number
-def share_tracking_number(tracking_info, choice):
+def share_tracking_number(courier, tracking_number, status, delivery_date):
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     socket.connect("tcp://localhost:5557")
-    request = {"tracking_info": str(tracking_info), "choice": "clipboard" if choice == "1" else "hastebin"}
+    request = courier + " Tracking Number: " + tracking_number + "   Status: " + status + "   Estimated Delivery: " + delivery_date
     socket.send_json(request)
+    response = socket.recv_string()
+
+# Display Map of Package Location
+def display_map(tracking_info):
+    context = zmq.Context()
+    socket = context.socket(zmq.REQ)
+    socket.connect("tcp://localhost:5558")
+    request = tracking_info['events'][0]['location']
+    socket.send_string(request)
     response = socket.recv_string()
     print(response)
 
@@ -149,10 +160,11 @@ def track_package(tracking_number):
     print(colorama.Fore.YELLOW + "4. Archive Tracking Number")
     print(colorama.Fore.YELLOW + "5. View Saved Tracking Numbers")
     print(colorama.Fore.YELLOW + "6. Share Tracking Number")
-    print(colorama.Fore.YELLOW + "7. Exit")
+    print(colorama.Fore.YELLOW + "7. View Map of Package Location")
+    print(colorama.Fore.YELLOW + "8. Exit")
 
     # User Input
-    option = input(colorama.Fore.CYAN + "\nEnter your choice (1-6): ")
+    option = input(colorama.Fore.CYAN + "\nEnter your choice (1-8): ")
 
     if option == "1":
         track_package(input(colorama.Fore.CYAN + "\nPlease enter a new tracking number: "))
@@ -174,15 +186,12 @@ def track_package(tracking_number):
         tracking_number = choose_number(numbers)
         track_package(tracking_number)
     elif option == "6":
-        print(colorama.Fore.GREEN + "\nShare the tracking info with your friends!")
-        # User chooses between copying info to clipboard or creating a HasteBin link
-        print(colorama.Fore.CYAN + "\nOptions:")
-        print(colorama.Fore.YELLOW + "1. Copy to Clipboard")
-        print(colorama.Fore.YELLOW + "2. Create HasteBin Link")
-        choice = input(colorama.Fore.CYAN + "\nEnter your choice (1-2): ")
-        share_tracking_number(tracking_info, choice)
-
+        print(colorama.Fore.GREEN + "\nThe tracking number has been copied to your clipboard.")
+        share_tracking_number(courier, tracking_number, status, delivery_date)
     elif option == "7":
+        print(colorama.Fore.GREEN + "Displaying a map of the package location...")
+        display_map(tracking_info)
+    elif option == "8":
         print(colorama.Fore.GREEN + "\nThank you for using Package Tracker!")
         exit()
 
